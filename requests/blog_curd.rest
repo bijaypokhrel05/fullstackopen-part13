@@ -1,0 +1,23 @@
+# posting details of blog
+POST http://localhost:3001/api/blogs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJAc2FuamVldnJhaTAxNSIsImlhdCI6MTc2Mjc1NDkzNH0.WaHnaeAsIjBTuKaN0_bC-Pl2oQ8eForpL29WVBxlviU
+Content-Type: application/json
+
+{
+    "author": "Albert Einstein",
+    "title": "Photo Electric Effect",
+    "url": "https://albert.sanjeev.drn:5432/",
+    "likes": 104
+}
+
+###
+GET http://localhost:3001/api/blogs
+
+###
+PUT http://localhost:3001/api/blogs/5
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJAc2FuamVldnJhaTAxNSIsImlhdCI6MTc2Mjc1NDkzNH0.WaHnaeAsIjBTuKaN0_bC-Pl2oQ8eForpL29WVBxlviU
+Content-Type: application/json
+
+{
+    "likes": 516
+}

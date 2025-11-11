@@ -1,33 +1,30 @@
 const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../util/db');
 
-class User extends Model {};
+class Session extends Model {};
 
-User.init({
+Session.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    username: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false
-    },
-    disabled: {
-        type: DataTypes.BOOLEAN,
+    userId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: false
+        references: {model: 'users', key: 'id'}
+    },
+    token: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
     }
 }, {
     sequelize,
     underscored: true,
     timestamps: true,
-    modelName: 'user'
+    modelName: 'session'
 });
 
-module.exports = User;
+module.exports = Session;
+

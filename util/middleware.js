@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const { Session, User } = require('../models');
+const { SECRET } = require('../util/config');
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
@@ -55,4 +57,51 @@ const tokenExtractor = async (req, res, next) => {
   next();
 }
 
-module.exports = { errorHandler, tokenExtractor };
+const sessionChecker = async (req, res, next) => {
+  try {
+    if (!req.token) {
+      return res.status(401).json({ error: 'Token missing' });
+    }
+
+    // Verify JWT token
+    const decodedToken = jwt.verify(req.token, SECRET);
+    if (!decodedToken.id) {
+      return res.status(401).json({ error: 'Token invalid' });
+    }
+
+    // Check if session exists in database
+    const session = await Session.findOne({
+      where: {
+        token: req.token
+      },
+      include: {
+        model: User
+      }
+    });
+
+    if (!session) {
+      return res.status(401).json({ error: 'Session not found or expired' });
+    }
+
+    // Check if user is disabled
+    if (session.user.disabled) {
+      return res.status(403).json({ error: 'User account is disabled' });
+    }
+
+    // Attach user and session to request
+    req.user = session.user;
+    req.session = session;
+
+    next();
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Token invalid' });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired' });
+    }
+    next(error);
+  }
+}
+
+module.exports = { errorHandler, tokenExtractor, sessionChecker };

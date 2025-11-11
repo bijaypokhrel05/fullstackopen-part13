@@ -1,8 +1,6 @@
 const router = require('express').Router();
 const { ReadingList, Blog, User } = require('../models');
-const { tokenExtractor } = require('../util/middleware');
-const jwt = require('jsonwebtoken');
-const { SECRET } = require('../util/config');
+const { tokenExtractor, sessionChecker } = require('../util/middleware');
 
 // Add a blog to reading list
 router.post('/', async (req, res, next) => {
@@ -78,29 +76,15 @@ router.get('/', async (req, res, next) => {
 });
 
 // Mark reading list item as read
-router.put('/:id', tokenExtractor, async (req, res, next) => {
+router.put('/:id', tokenExtractor, sessionChecker, async (req, res, next) => {
     try {
-        if (!req.token) {
-            return res.status(401).json({ error: 'Token missing' });
-        }
-
-        const decodedToken = jwt.verify(req.token, SECRET);
-        if (!decodedToken.id) {
-            return res.status(401).json({ error: 'Token invalid' });
-        }
-
-        const user = await User.findByPk(decodedToken.id);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
         const readingList = await ReadingList.findByPk(req.params.id);
         if (!readingList) {
             return res.status(404).json({ error: 'Reading list item not found' });
         }
 
         // Only the owner can update their reading list
-        if (readingList.userId !== user.id) {
+        if (readingList.userId !== req.user.id) {
             return res.status(403).json({ error: 'Not authorized to update this reading list item' });
         }
 
@@ -118,9 +102,6 @@ router.put('/:id', tokenExtractor, async (req, res, next) => {
 
         res.status(200).json(updatedReadingList);
     } catch (error) {
-        if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ error: 'Token invalid' });
-        }
         next(error);
     }
 });

@@ -40,6 +40,33 @@ router.post('/', async(req, res, next) => {
     }
 });
 
+router.get('/:id', async (req, res, next) => {
+    try {
+        const user = await User.findByPk(req.params.id, {
+            include: {
+                model: Blog,
+                as: 'readings',
+                attributes: ['id', 'url', 'title', 'author', 'likes', 'year'],
+                through: {
+                    attributes: []
+                }
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.status(200).json({
+            name: user.name,
+            username: user.username,
+            readings: user.readings || []
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 router.put('/:username', async (req, res, next) => {
     try {
         const username = req.params.username;

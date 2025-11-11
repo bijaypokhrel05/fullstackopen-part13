@@ -27,6 +27,5 @@ module.exports = {
     },
     down: async ({context: queryInterface}) => {
         await queryInterface.dropTable('reading_lists');
-        await queryInterface.removeColumn('reading_lists', 'read');
     }
 };

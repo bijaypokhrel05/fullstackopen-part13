@@ -11,6 +11,12 @@ const errorHandler = (error, request, response, next) => {
   }
 
   if (error.name === 'SequelizeUniqueConstraintError') {
+    // Check if it's a reading list duplicate
+    if (error.errors && error.errors.some(e => e.path && e.path.includes('user_id'))) {
+      return response.status(400).json({ 
+        error: 'Blog already in reading list'
+      });
+    }
     return response.status(400).json({ 
       error: 'Unique constraint violation',
       details: error.errors.map(e => e.message)

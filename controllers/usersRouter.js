@@ -42,17 +42,27 @@ router.post('/', async(req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
     try {
+        const includeOptions = {
+            model: Blog,
+            as: 'readings',
+            attributes: ['id', 'url', 'title', 'author', 'likes', 'year'],
+            through: {
+                model: ReadingList,
+                attributes: ['id', 'read']
+            }
+        };
+
+        // Filter by read status if query parameter is provided
+        if (req.query.read !== undefined) {
+            const readValue = req.query.read === 'true';
+            includeOptions.through.where = {
+                read: readValue
+            };
+        }
+
         const user = await User.findByPk(req.params.id, {
             attributes: ['name', 'username'],
-            include: {
-                model: Blog,
-                as: 'readings',
-                attributes: ['id', 'url', 'title', 'author', 'likes', 'year'],
-                through: {
-                    model: ReadingList,
-                    attributes: ['id', 'read']
-                }
-            }
+            include: includeOptions
         });
 
         if (!user) {
